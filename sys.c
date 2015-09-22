@@ -55,4 +55,7 @@ int sys_write(int fd, char* buffer, int size) {
   return 0;
 }
 
+int sys_gettime(){
+  return 0;
+}
 

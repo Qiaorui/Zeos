@@ -57,3 +57,14 @@ int write(int fd, char *buffer, int size) {
   return result;
 }
 
+int gettime() {
+  int result=-1;
+  __asm__(
+	  "movl $10, %%eax\n"
+	  "int $0x80\n"
+	  "movl %%eax, %0" 
+	  :"=r"(result)
+	 );
+  return result;
+}
+

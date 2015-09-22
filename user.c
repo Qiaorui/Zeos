@@ -15,5 +15,9 @@ int __attribute__ ((__section__(".text.main")))
   char* msg = "[sys_write] ok\n";
   int size = strlen(msg);
   write(1,msg,size);
+  if (gettime() != 0) write(1,"clock:>",7);
+  else write(1,"clock:0",7);
+
+
   while(1) { }
 }
