@@ -56,6 +56,8 @@ int sys_write(int fd, char* buffer, int size) {
 }
 
 int sys_gettime(){
-  return 0;
+  int result = sys_gettime_console();
+  
+  return result;
 }
 

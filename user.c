@@ -4,20 +4,39 @@ char buff[24];
 
 int pid;
 
+void coutStr(char* msg){
+  int size = strlen(msg);
+  write(1,msg,size);
+}
+
+void coutInt(int n) {
+  char msg[10];
+  itoa(n,msg);
+  int size = strlen(msg);
+  write(1,msg,size);
+}
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
     //__asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); 
-
-  //int $0x80;
   write (1,"\n\n\n\n",4);
-  char* msg = "[sys_write] ok\n";
-  int size = strlen(msg);
-  write(1,msg,size);
-  if (gettime() != 0) write(1,"clock:>",7);
-  else write(1,"clock:0",7);
 
+  //SYS_WRITE TEST
+  coutStr("[sys_write] ok\n");
 
+  //CLOCK TEST
+  int clock_t=gettime();
+  int volatile a =0;
+  while(a<5) {
+  while(gettime() == clock_t) {
+  }
+  clock_t=gettime();
+  coutStr("[clock] ");
+  coutInt(gettime());
+  a=a+1;
+  coutStr("\n"); 
+ }
   while(1) { }
 }
