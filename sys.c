@@ -13,19 +13,20 @@
 
 #include <sched.h>
 
+#include <errno.h>
 #define LECTURA 0
 #define ESCRIPTURA 1
 
 int check_fd(int fd, int permissions)
 {
-  if (fd!=1) return -9; /*EBADF*/
-  if (permissions!=ESCRIPTURA) return -13; /*EACCES*/
+  if (fd!=1) return EBADF; /*EBADF*/
+  if (permissions!=ESCRIPTURA) return EACCES; /*EACCES*/
   return 0;
 }
 
 int sys_ni_syscall()
 {
-	return -38; /*ENOSYS*/
+	return ENOSYS; /*ENOSYS*/
 }
 
 int sys_getpid()
@@ -49,8 +50,7 @@ void sys_exit()
 int sys_write(int fd, char* buffer, int size) {
   int ret = check_fd(fd, ESCRIPTURA);
   if (ret != 0) return ret;
-  if (buffer == NULL) return -3;
-  if (size < 1) return -4;
+  if (buffer == NULL || size < 1 || fd != 1) return EINVAL;
   sys_write_console(buffer, size);
   return 0;
 }
