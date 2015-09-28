@@ -75,6 +75,7 @@ void cout(char* msg){
 
 void perror(char* msg) {
   cout(msg);
+
   switch(errno){
     case EBADF:
       cout(": Bad file number");

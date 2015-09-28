@@ -29,14 +29,20 @@ int __attribute__ ((__section__(".text.main")))
   //CLOCK TEST
   int clock_t=gettime();
   int volatile a =0;
-  while(a<5) {
+  while(a<3) {
   while(gettime() == clock_t) {
   }
   clock_t=gettime();
   coutStr("[clock] ");
   coutInt(gettime());
   a=a+1;
-  coutStr("\n"); 
+  coutStr("  ok\n"); 
  }
+
+
+  //errno TEST
+  if (write(0,"a",1)< 0)
+  perror("[ERRNO TEST]Should be a error message");  
+
   while(1) { }
 }
