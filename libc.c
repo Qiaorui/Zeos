@@ -48,12 +48,16 @@ int strlen(char *a)
 
 int write(int fd, char *buffer, int size) {
   int result=-1;
-  __asm__("movl %1, %%ebx\n"
+  __asm__(//"pushl %%eax\n"
+	  "pushl %%ebx\n"
+	  "movl %1, %%ebx\n"
 	  "movl %2, %%ecx\n"
 	  "movl %3, %%edx\n"
 	  "movl $4, %%eax\n"
 	  "int $0x80\n"
-	  "movl %%eax, %0" 
+	  "movl %%eax, %0\n" 
+	  "popl %%ebx\n"
+	  //"popl %%eax"
 	  :"=r"(result)
 	  :"m"(fd) ,"m"(buffer) ,"m"(size) 
 	 );
@@ -80,20 +84,15 @@ void perror(char* msg) {
     case EBADF:
       cout(": Bad file number");
       break;
-
     case EACCES:
       cout(": Permission denied");
       break;
-
     case EINVAL:
       cout(": Invalid argument");
       break;
-
-
     case ENOSYS:
       cout(": Function not implemented");
       break;
-
     default:
       cout("Unknown error");
   }
@@ -102,10 +101,11 @@ void perror(char* msg) {
 
 int gettime() {
   int result=-1;
-  __asm__(
+  __asm__(//"pushl %%eax\n"
 	  "movl $10, %%eax\n"
 	  "int $0x80\n"
-	  "movl %%eax, %0" 
+	  "movl %%eax, %0\n" 
+	  //"popl %%eax"
 	  :"=r"(result)
 	 );
   if (result < 0) {

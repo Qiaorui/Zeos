@@ -50,8 +50,11 @@ void sys_exit()
 int sys_write(int fd, char* buffer, int size) {
   int ret = check_fd(fd, ESCRIPTURA);
   if (ret != 0) return ret;
-  if (buffer == NULL || size < 1 || fd != 1) return EINVAL;
-  sys_write_console(buffer, size);
+  if (buffer == NULL || size < 0 || fd != 1) return EINVAL;
+  char kernel_data[size];
+  ret = copy_from_user(buffer, kernel_data, size);
+  if (ret != 0) return ret;
+  sys_write_console(kernel_data, size);
   return 0;
 }
 

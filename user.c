@@ -27,6 +27,7 @@ int __attribute__ ((__section__(".text.main")))
   coutStr("[sys_write] ok\n");
 
   //CLOCK TEST
+
   int clock_t=gettime();
   int volatile a =0;
   while(a<3) {
