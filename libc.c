@@ -49,6 +49,7 @@ int strlen(char *a)
 int write(int fd, char *buffer, int size) {
   int result=-1;
   __asm__(//"pushl %%eax\n"
+          //Must save EBX ESI EDI
 	  "pushl %%ebx\n"
 	  "movl %1, %%ebx\n"
 	  "movl %2, %%ecx\n"
