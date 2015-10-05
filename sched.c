@@ -71,15 +71,19 @@ void init_task1(void)
 
 
 void init_sched(){
+
+  //Initialization of freequeue
   INIT_LIST_HEAD(&freequeue);
   int i=0;
   while (i<NR_TASKS) {
     list_add_tail(&task[i].task.list, &freequeue);
     ++i;
   }
-  /*for (int i=0;i<NR_TASKS;++i) {
-    list_add_tail(&task[i].task.list, &freequeue);
-  }*/
+
+  //Initialization of readyqueue
+  INIT_LIST_HEAD(&readyqueue);
+  
+
 }
 
 struct task_struct* current()
