@@ -11,5 +11,5 @@
 extern TSS         tss;
 extern Descriptor* gdt;
 extern int zeos_ticks;
-
+extern struct task_struct *idle_task;
 #endif  /* __SYSTEM_H__ */

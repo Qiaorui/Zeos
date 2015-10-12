@@ -55,7 +55,7 @@ int allocate_DIR(struct task_struct *t)
 void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
-
+        printk("CPU IDLE");
 	while(1)
 	{
 	;
@@ -70,11 +70,12 @@ void init_idle (void)
   allocate_DIR(tmp);
   //cpu_idle();
   idle_task = tmp;
-  
+
+
   union task_union* tmp_task = (union task_union*)tmp;
   tmp_task->stack[1023] = (int)cpu_idle;
   tmp_task->stack[1022] = 0;
-  tmp_task->task.kernel_esp = &tmp_task->stack[1022];
+  tmp_task->task.kernel_esp = (int)&tmp_task->stack[1022];
 
 }
 
@@ -89,10 +90,8 @@ void init_task1(void)
   set_user_pages(tmp);
 //UPDATE TSS
   union task_union* tmp_task = (union task_union*)tmp;
-  tss.esp0 = &tmp_task->stack[KERNEL_STACK_SIZE];
+  tss.esp0 = (DWord)&tmp_task->stack[KERNEL_STACK_SIZE];
   set_cr3(get_DIR(tmp));  
-
-
 }
 
 
@@ -110,6 +109,40 @@ void init_sched(){
   INIT_LIST_HEAD(&readyqueue);
   
 
+}
+
+void inner_task_switch(union task_union* new){
+  struct task_struct* current_task_struct = current();
+  struct task_struct* new_task = (struct task_struct *)new;
+  tss.esp0 = (DWord)new->stack[KERNEL_STACK_SIZE];
+
+  set_cr3(get_DIR(new_task));
+
+  __asm__ __volatile__("movl %%ebp, %0":"=r"(current_task_struct->kernel_esp));
+
+  __asm__ __volatile__("movl %0, %%esp"::"r"(new_task->kernel_esp));
+
+  __asm__ __volatile__("popl %ebp \n"
+                       "ret \n");
+}
+
+
+void task_switch(union task_union* new){
+  __asm__ __volatile__ (//"pushl %%eax\n"
+          //Must save EBX ESI EDI
+    "pushl %esi\n"
+    "pushl %ebx\n"
+    "pushl %edi\n"
+   );
+  
+  inner_task_switch(new);
+
+  __asm__ __volatile__ (//"pushl %%eax\n"
+          //Must save EBX ESI EDI
+    "popl %edi\n"
+    "popl %ebx\n"
+    "popl %esi\n"
+   );
 }
 
 struct task_struct* current()

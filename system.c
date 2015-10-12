@@ -98,7 +98,8 @@ int __attribute__((__section__(".text.main")))
 
   
   printk("Entering user mode..."); 
-  zeos_ticks=0;
+  //task_switch((union task_union*) idle_task);  
+zeos_ticks=0;
   enable_int();
   /*
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges
