@@ -80,6 +80,19 @@ void init_idle (void)
 
 void init_task1(void)
 {
+
+  struct task_struct* tmp = list_head_to_task_struct(list_first(&freequeue));
+  list_del(list_first(&freequeue));
+  tmp->PID = 1;
+  allocate_DIR(tmp);
+  //cpu_idle();
+  set_user_pages(tmp);
+//UPDATE TSS
+  union task_union* tmp_task = (union task_union*)tmp;
+  tss.esp0 = &tmp_task->stack[KERNEL_STACK_SIZE];
+  set_cr3(get_DIR(tmp));  
+
+
 }
 
 
