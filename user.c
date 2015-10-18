@@ -2,7 +2,7 @@
 
 char buff[24];
 
-int pid;
+
 
 void coutStr(char* msg){
   int size = strlen(msg);
@@ -23,6 +23,11 @@ int __attribute__ ((__section__(".text.main")))
     //__asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); 
   write (1,"\n\n\n\n",4);
 
+  /*//getPID test
+  int pid = getpid();
+  coutStr("[PID]:");
+  coutInt(pid);
+*/
   //SYS_WRITE TEST
   coutStr("[sys_write] ok\n");
 
@@ -40,10 +45,24 @@ int __attribute__ ((__section__(".text.main")))
   coutStr("  ok\n"); 
  }
 
+  int pid = fork();
+  int tmp;
+  if (pid < 0) {
+  //error
+  }
+  if (pid == 0){
+  //child
+    coutStr("Child: I'm PID ");
+    //getPID test
+    coutInt(getpid());
+  }
+  if (pid >0) {
+  //father
+    coutStr("Father: I'm PID ");
+    //getPID test
+    coutInt(getpid());
+  }
 
-  //errno TEST
-  if (write(0,"a",1)< 0)
-  perror("[ERRNO TEST]Should be a error message");  
 
   while(1) { }
 }

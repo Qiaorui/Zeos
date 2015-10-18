@@ -66,6 +66,7 @@ int write(int fd, char *buffer, int size) {
     errno = result;
     return -1;
   }
+  errno = 0;
   return result;
 }
 
@@ -113,6 +114,46 @@ int gettime() {
     errno = result;
     return -1;
   }
+  errno = 0;
   return result;
 }
 
+
+int getpid(){
+  int result=-1;
+  __asm__(//"pushl %%eax\n"
+    "movl $20, %%eax\n"
+    "int $0x80\n"
+    "movl %%eax, %0\n" 
+    //"popl %%eax"
+    :"=r"(result)
+   );
+  if (result < 0) {
+    errno = result;
+    return -1;
+  }
+  errno = 0;
+  return result;
+}
+
+int fork(){
+  int result=-1;
+  __asm__(//"pushl %%eax\n"
+    "movl $2, %%eax\n"
+    "int $0x80\n"
+    "movl %%eax, %0\n" 
+    //"popl %%eax"
+    :"=r"(result)
+   );
+  if (result < 0) {
+    errno = result;
+    return -1;
+  }
+  errno = 0;
+  return result;
+}
+
+void exit(){
+
+
+}

@@ -26,6 +26,7 @@ extern struct list_head blocked;
 struct list_head freequeue;
 struct list_head readyqueue;
 struct task_struct *idle_task;
+int new_pid;
 
 
 /* get_DIR - Returns the Page Directory address for task 't' */
@@ -50,6 +51,11 @@ int allocate_DIR(struct task_struct *t)
 	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos]; 
 
 	return 1;
+}
+
+int getNewPid(){
+  ++new_pid;
+  return new_pid;
 }
 
 void cpu_idle(void)
@@ -107,6 +113,8 @@ void init_sched(){
 
   //Initialization of readyqueue
   INIT_LIST_HEAD(&readyqueue);
+
+  new_pid = 1;
   
 
 }
