@@ -26,6 +26,16 @@ int check_fd(int fd, int permissions)
   return 0;
 }
 
+void user_to_system(void)
+{
+  update_stats(&(current()->stats.user_ticks), &(current()->stats.elapsed_total_ticks));
+}
+
+void system_to_user(void)
+{
+  update_stats(&(current()->stats.system_ticks), &(current()->stats.elapsed_total_ticks));
+}
+
 int sys_ni_syscall()
 {
 	return ENOSYS; /*ENOSYS*/
@@ -102,7 +112,7 @@ int sys_fork()
   set_cr3(get_DIR(current()));
 
   new_task->PID = getNewPid();
-
+  new_task->state=ST_READY;
   union task_union* uchild = (union task_union*)new_task;
   
 
@@ -123,6 +133,7 @@ int sys_fork()
   uchild->task.kernel_esp-=sizeof(DWord);
   *(DWord*)(uchild->task.kernel_esp)=temp_ebp;
 
+  init_stats(&(uchild->task.stats));
   list_add_tail(&(uchild->task.list), &readyqueue);
 
 
@@ -145,7 +156,7 @@ void sys_exit()
   }
 
   list_add_tail(&(current()->list), &freequeue);
-
+current()->PID=-1;
   sched_next_rr();
 }
 
@@ -164,5 +175,25 @@ int sys_gettime(){
   int result = sys_gettime_console();
   
   return result;
+}
+
+
+int sys_get_stats(int pid, struct stats *st) {
+
+  int i;
+  
+  if (!access_ok(VERIFY_WRITE, st, sizeof(struct stats))) return -EFAULT; 
+  
+  if (pid<0) return -EINVAL;
+  for (i=0; i<NR_TASKS; i++)
+  {
+    if (task[i].task.PID==pid)
+    {
+      task[i].task.stats.remaining_ticks=remaining_quantum;
+      copy_to_user(&(task[i].task.stats), st, sizeof(struct stats));
+      return 0;
+    }
+  }
+  return -ESRCH; /*ESRCH */
 }
 

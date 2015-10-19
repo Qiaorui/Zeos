@@ -159,3 +159,27 @@ void exit(){
     "int $0x80\n"
    );
 }
+
+int get_stats(int pid, struct stats *st)
+{
+  int result;
+  __asm__ __volatile__ (
+ 	  "pushl %%ebx\n"
+	  "movl %1, %%ebx\n"
+	  "movl %2, %%ecx\n"
+	  "movl $35, %%eax\n"
+	  "int $0x80\n"
+	  "movl %%eax, %0\n" 
+	  "popl %%ebx\n"
+	  //"popl %%eax"
+	  :"=r"(result)
+	  :"m"(pid) ,"m"(st) 
+	 );
+  if (result < 0) {
+    errno = result;
+    return -1;
+  }
+  errno = 0;
+  return result;
+}
+

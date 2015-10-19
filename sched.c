@@ -43,6 +43,30 @@ page_table_entry * get_PT (struct task_struct *t)
 }
 
 
+void update_stats(unsigned long *v, unsigned long *elapsed)
+{
+  unsigned long current_ticks;
+  
+  current_ticks=get_ticks();
+  
+  *v += current_ticks - *elapsed;
+  
+  *elapsed=current_ticks;
+  
+}
+
+void init_stats(struct stats *s)
+{
+	s->user_ticks = 0;
+	s->system_ticks = 0;
+	s->blocked_ticks = 0;
+	s->ready_ticks = 0;
+	s->elapsed_total_ticks = get_ticks();
+	s->total_trans = 0;
+	s->remaining_ticks = get_ticks();
+}
+
+
 int allocate_DIR(struct task_struct *t) 
 {
 	int pos;
@@ -78,6 +102,7 @@ void init_idle (void)
   tmp->quantum = DEFAULT_QUANTUM;
   //cpu_idle();
   idle_task = tmp;
+  init_stats(&tmp->stats);
 
 
   union task_union* tmp_task = (union task_union*)tmp;
@@ -96,6 +121,8 @@ void init_task1(void)
   tmp->state = ST_RUN;
   tmp->quantum = DEFAULT_QUANTUM;
   remaining_quantum = DEFAULT_QUANTUM;
+  init_stats(&tmp->stats);
+
   allocate_DIR(tmp);
   //cpu_idle();
   set_user_pages(tmp);
@@ -200,6 +227,9 @@ void sched_next_rr(){
   next->state=ST_RUN;
   remaining_quantum=get_quantum(next);
 
+  update_stats(&(current()->stats.system_ticks), &(current()->stats.elapsed_total_ticks));
+  update_stats(&(next->stats.ready_ticks), &(next->stats.elapsed_total_ticks));
+  next->stats.total_trans++;
 
   task_switch((union task_union*)next);
 }
@@ -212,7 +242,7 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest){
     if (dest!=&readyqueue) t->state=ST_BLOCKED;
     else
     {
-
+      update_stats(&(current()->stats.system_ticks), &(current()->stats.elapsed_total_ticks));
       t->state=ST_READY;
     }
   }
