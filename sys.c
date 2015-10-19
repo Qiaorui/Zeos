@@ -17,6 +17,8 @@
 #define LECTURA 0
 #define ESCRIPTURA 1
 
+extern int remaining_quantum;
+
 int check_fd(int fd, int permissions)
 {
   if (fd!=1) return EBADF; /*EBADF*/

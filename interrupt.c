@@ -7,7 +7,7 @@
 #include <hardware.h>
 #include <io.h>
 #include <entry.h>
-
+#include <sched.h>
 #include <zeos_interrupt.h>
 
 Gate idt[IDT_ENTRIES];
@@ -99,6 +99,7 @@ void keyboard_routine() {
 void clock_routine() {
   ++zeos_ticks;
   zeos_show_clock();
+  schedule();
 }
 
 void setIdt()

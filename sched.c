@@ -27,7 +27,8 @@ struct list_head freequeue;
 struct list_head readyqueue;
 struct task_struct *idle_task;
 int new_pid;
-
+#define DEFAULT_QUANTUM 100
+int remaining_quantum=0;
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -74,6 +75,7 @@ void init_idle (void)
   list_del(list_first(&freequeue));
   tmp->PID = 0;
   allocate_DIR(tmp);
+  tmp->quantum = DEFAULT_QUANTUM;
   //cpu_idle();
   idle_task = tmp;
 
@@ -91,6 +93,9 @@ void init_task1(void)
   struct task_struct* tmp = list_head_to_task_struct(list_first(&freequeue));
   list_del(list_first(&freequeue));
   tmp->PID = 1;
+  tmp->state = ST_RUN;
+  tmp->quantum = DEFAULT_QUANTUM;
+  remaining_quantum = DEFAULT_QUANTUM;
   allocate_DIR(tmp);
   //cpu_idle();
   set_user_pages(tmp);
@@ -122,7 +127,7 @@ void init_sched(){
 void inner_task_switch(union task_union* new){
   struct task_struct* current_task_struct = current();
   struct task_struct* new_task = (struct task_struct *)new;
-  tss.esp0 = (DWord)new->stack[KERNEL_STACK_SIZE];
+  tss.esp0 = (DWord)&new->stack[KERNEL_STACK_SIZE];
 
   set_cr3(get_DIR(new_task));
 
@@ -163,4 +168,82 @@ struct task_struct* current()
   );
   return (struct task_struct*)(ret_value&0xfffff000);
 }
+
+
+
+
+int get_quantum(struct task_struct *t)
+{
+  return t->quantum;
+}
+
+void set_quantum(struct task_struct *t, int new_quantum)
+{
+  t->quantum=new_quantum;
+}
+
+void sched_next_rr(){
+  struct list_head *e;
+  struct task_struct* next;
+
+
+  if (!list_empty(&readyqueue))
+  {
+
+    e=list_first(&readyqueue);
+    next = list_head_to_task_struct(e);
+    list_del(e);
+  }
+  else
+    next=idle_task;
+
+  next->state=ST_RUN;
+  remaining_quantum=get_quantum(next);
+
+
+  task_switch((union task_union*)next);
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest){
+  if (t->state!=ST_RUN) list_del(&(t->list));
+  if (dest!=NULL)
+  {
+    list_add_tail(&(t->list), dest);
+    if (dest!=&readyqueue) t->state=ST_BLOCKED;
+    else
+    {
+
+      t->state=ST_READY;
+    }
+  }
+  else t->state=ST_RUN;
+}
+
+
+int needs_sched_rr() {
+  if ((remaining_quantum==0)&&(!list_empty(&readyqueue))) return 1;
+  if (remaining_quantum==0) remaining_quantum=get_quantum(current());
+  return 0;
+}
+
+
+void update_sched_data_rr(){
+  --remaining_quantum;
+}
+
+void schedule() {
+  update_sched_data_rr();
+  if (needs_sched_rr())
+  {
+    update_process_state_rr(current(), &readyqueue);
+    sched_next_rr();
+  }
+}
+
+
+
+
+
+
+
 
