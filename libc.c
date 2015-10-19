@@ -154,6 +154,8 @@ int fork(){
 }
 
 void exit(){
-
-
+  __asm__(//"pushl %%eax\n"
+    "movl $1, %eax\n"
+    "int $0x80\n"
+   );
 }

@@ -55,6 +55,7 @@ int __attribute__ ((__section__(".text.main")))
     coutStr("Child: I'm PID ");
     //getPID test
     coutInt(getpid());
+    exit();
   }
   if (pid >0) {
   //father
